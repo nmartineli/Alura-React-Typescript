@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { timeToSeconds } from '../../common/utils/time';
 import { ITask } from '../../types/task';
 import Button from '../Button';
@@ -7,23 +7,35 @@ import style from './Timer.module.scss';
 
 interface Props {
 	isSelected: ITask | undefined;
+	endTask: () => void;
 }
 
-export default function Timer({ isSelected }: Props) {
+export default function Timer({ isSelected, endTask }: Props) {
 	const [time, setTime] = useState<number>();
 
-	if (isSelected?.time) {
-		setTime(timeToSeconds(isSelected.time));
+	useEffect(() => {
+		if (isSelected?.time) {
+			setTime(timeToSeconds(isSelected?.time));
+		}
+	}, [isSelected]);
+
+	function timer(counter: number = 0) {
+		setTimeout(() => {
+			if (counter > 0) {
+				setTime(counter - 1);
+				return timer(counter - 1);
+			}
+			endTask();
+		}, 1000);
 	}
 
 	return (
 		<div className={style.cronometro}>
 			<p className={style.titulo}>Escolha um card e inicie o cronômetro </p>
-			Tempo: {time}
 			<div className={style.relogioWrapper}>
-				<Clock />
+				<Clock time={time} />
 			</div>
-			<Button>Começar</Button>
+			<Button onClick={() => timer(time)}>Começar</Button>
 		</div>
 	);
 }
